@@ -12,4 +12,14 @@ Capybara.configure do |config|
   config.default_max_wait_time = 0
 end
 
-AutomationHelpers::Drivers::Local.new(:chrome).register
+desired_capabilities = ::Selenium::WebDriver::Remote::Capabilities.new
+options = ::Selenium::WebDriver::Chrome::Options.new
+
+Capybara.register_driver :selenium do |app|
+  Capybara::Selenium::Driver.new(
+    app,
+    browser: :chrome,
+    service: nil,
+    capabilities: [desired_capabilities, options]
+  )
+end
