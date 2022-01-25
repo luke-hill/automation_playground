@@ -2,11 +2,8 @@ require 'capybara'
 require 'capybara/dsl'
 require 'rspec'
 require 'selenium-webdriver'
-require 'site_prism'
 require 'webdrivers'
 require 'automation_helpers'
-
-require_relative '../pages/login'
 
 Capybara.configure do |config|
   config.run_server = false
