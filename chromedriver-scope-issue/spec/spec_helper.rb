@@ -3,7 +3,6 @@ require 'capybara/dsl'
 require 'rspec'
 require 'selenium-webdriver'
 require 'webdrivers'
-require 'automation_helpers'
 
 Capybara.configure do |config|
   config.run_server = false
@@ -23,3 +22,4 @@ Capybara.register_driver :selenium do |app|
     capabilities: [desired_capabilities, options]
   )
 end
+
