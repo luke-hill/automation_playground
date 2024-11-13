@@ -2,11 +2,12 @@
 
 source 'https://rubygems.org'
 
+ruby '3.3.6'
+
 gem 'capybara'
 gem 'cucumber'
-gem 'curb', '0.9.7'
+gem 'curb'
 gem 'dotenv'
-gem 'jenkins_api_client'
 gem 'rspec'
 gem 'rubocop'
 gem 'selenium-webdriver'
