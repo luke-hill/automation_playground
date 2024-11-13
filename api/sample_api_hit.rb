@@ -9,8 +9,8 @@ c = Curl::Easy.new(full_url) do |curl|
 end
 
 c.perform
-File.write('output.json', c.body_str)
-c&.close
+File.write('response', c.response_code)
+c.close
 
 # POST
 c2 = Curl::Easy.new("http://my.rails.box/thing/create")
