@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Cucumber:
 #
 # Put this file in features/support/helpers/interceptor.rb
@@ -45,8 +47,8 @@ module Interceptor
   # Add an interception hash for a given url, http method, and response
   # @url can be a regexp or a string
   # @method can be a string or a symbol, an can be uppercase or lowercase
-  def intercept(url, response = "", method = :any)
-    @interceptions << {url: url, method: method, response: response}
+  def intercept(url, response = '', method = :any)
+    @interceptions << { url: url, method: method, response: response }
   end
 
   def start_intercepting
@@ -74,7 +76,7 @@ module Interceptor
         # intercept any external request with an empty response and print some logs
         continue.call(request) do |response|
           log_request(url, method)
-          response.body = "foobarbazbay"
+          response.body = 'foobarbazbay'
         end
       end
     end
@@ -124,7 +126,7 @@ module Interceptor
   private
 
   # check if the given request url and http method pair is allowed by any rule
-  def allowed_request?(url, method = "GET")
+  def allowed_request?(url, method = 'GET')
     allowed_requests.any? do |allowed|
       allowed_url = allowed.is_a?(Hash) ? allowed[:url] : allowed
       matches_url = url.match?(allowed_url)
@@ -138,7 +140,7 @@ module Interceptor
   end
 
   # find the interception hash for a given url and http method pair
-  def response_for(url, method = "GET")
+  def response_for(url, method = 'GET')
     @interceptions.find do |interception|
       matches_url = url.match?(interception[:url])
       intercepted_method = interception[:method] || :any
@@ -151,9 +153,9 @@ module Interceptor
   # clears the devtools callback for the interceptions
   def clear_devtools_intercepts
     callbacks = page.driver.browser.devtools.callbacks
-    if callbacks.has_key?("Fetch.requestPaused")
-      callbacks.delete("Fetch.requestPaused")
-    end
+    return unless callbacks.key?('Fetch.requestPaused')
+
+    callbacks.delete('Fetch.requestPaused')
   end
 
   def log_request(url, method)
