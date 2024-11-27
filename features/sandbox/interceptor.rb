@@ -46,19 +46,19 @@
 module Interceptor
   # Add an interception hash for a given url, http method, and response
   # @url can be a regexp or a string
-  # @method can be a string or a symbol, an can be uppercase or lowercase
-  def intercept(url, response = '', method = :any)
+  # @method can be a string or a symbol. Can be uppercase or lowercase
+  def intercept(url, response = '', method = :ANY)
     @interceptions << { url: url, method: method, response: response }
   end
 
   def start_intercepting
-    # ignore if the driver is RackTest
-    return unless page.driver.browser.respond_to?(:intercept)
+    raise 'Unsupported Driver' unless page.driver.browser.respond_to?(:intercept)
 
-    # only attach the intercept callback once to the browser
-    @interceptions = default_interceptions
-
+    # If this isn't the first time this has been invoked, stop as we don't want to attach the interceptor twice
     return if @intercepting
+
+    # Set the default interceptions
+    @interceptions = default_interceptions
 
     page.driver.browser.intercept do |request, &continue|
       url = request.url
@@ -67,16 +67,19 @@ module Interceptor
       if (interception = response_for(url, method))
         # set mocked body if there's an interception for the url and method
         continue.call(request) do |response|
+          SitePrism.logger.debug("INTERCEPTED #{url}. Will mock response with: #{interception[:response]}")
+          response.code ||= 200
+          response.headers['Access-Control-Allow-Origin'] = '*'
           response.body = interception[:response]
         end
       elsif allowed_request?(url, method)
         # leave request untouched if allowed
         continue.call(request)
       else
-        # intercept any external request with an empty response and print some logs
+        # intercept any external request with a dummy response and print some logs
         continue.call(request) do |response|
-          log_request(url, method)
-          response.body = 'foobarbazbay'
+          SitePrism.logger.warn("INTERCEPTED #{url}. Will mock response with dummy string")
+          response.body = 'FooBar'
         end
       end
     end
@@ -139,9 +142,9 @@ module Interceptor
     end
   end
 
-  # find the interception hash for a given url and http method pair
+  # find the First matching interception hash for a given url and http method pair
   def response_for(url, method = 'GET')
-    @interceptions.find do |interception|
+    @interceptions.detect do |interception|
       matches_url = url.match?(interception[:url])
       intercepted_method = interception[:method] || :any
       matches_method = intercepted_method == :any || method == intercepted_method.to_s.upcase
@@ -156,11 +159,5 @@ module Interceptor
     return unless callbacks.key?('Fetch.requestPaused')
 
     callbacks.delete('Fetch.requestPaused')
-  end
-
-  def log_request(url, method)
-    message = "External JavaScript request not intercepted: #{method} #{url}"
-    puts message
-    SitePrism.logger.warn(message)
   end
 end
